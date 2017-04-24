@@ -51,10 +51,11 @@ public class SuperMaster {
 			if (scan.nextLine().equals("job")) {
 				System.out.println("Enter txt file name:");
 				String file = scan.nextLine();
+				String jid = ownIP.toString() + "_" + numJobs;
 				sm.numJobs ++;
 				IntMaster master = (IntMaster) UnicastRemoteObject.exportObject(master,0);
 				registry.bind("Master " + sm.numJobs.toString(), master);
-				master.beginJob(file,sm.workerIPs,sm.workersRunning,sm.ownIP);
+				master.beginJob(jid,file,sm.workerIPs,sm.workersRunning,sm.ownIP);
 			}
 		}
 	}
