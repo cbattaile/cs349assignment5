@@ -2,3 +2,12 @@
 /IntMapTask.class
 /IntMaster.class
 /IntReduceTask.class
+/IntWorker.class
+/Master.class
+/SuperMaster.class
+/Mapper.class
+/Worker.class
+/MapTask.class
+/Reducer.class
+/ReducerTask.class
+/ReduceTask.class

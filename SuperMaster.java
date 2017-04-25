@@ -1,3 +1,11 @@
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Scanner;
+
 public class SuperMaster {
 
 	private static final ArrayList<String> workerIPs = new ArrayList<String>(Arrays.asList("ownIP", "IP2", "IP3"));
@@ -15,14 +23,14 @@ public class SuperMaster {
 		SuperMaster sm = new SuperMaster();
 
 		sm.ownIP = args[0];
-
+		Registry registry;
+		// create a worker
 		try {
-			IntWorker worker = (IntWorker) UnicastRemoteObject.exportObject(worker, 0);
-			// Bind the remote object's stub in the registry
-			Registry registry = LocateRegistry.getRegistry();
+			Worker worker = new Worker();
+			IntWorker workerStub = (IntWorker) UnicastRemoteObject.exportObject(worker, 0);
+			registry = LocateRegistry.getRegistry();
 			registry.bind("Worker", worker);
-			sm.myWorker = worker;
-			worker.initialize(workersRunning,ownIP);
+			sm.myWorker = workerStub;
 			System.out.println("worker has been bound to RMI registry");
 		} catch (Exception e) {
 			System.err.println("Client exception (could not register worker): \n" + e.toString());
@@ -33,10 +41,11 @@ public class SuperMaster {
 		while (sm.workerIPs.size() != sm.workersRunning.size()) {
 			for (int i = 0; i < workerIPs.size(); i++) {
 				try {
-					Registry reg = LocateRegistry.getRegistry(sm.workerIPs[i]);
+					Registry reg = LocateRegistry.getRegistry(sm.workerIPs.get(i));
 					sm.workersRunning.put((IntWorker) reg.lookup("Worker"),true);
 				} catch (Exception e) {
-					System.out.println("Worker " + sm.workerIPs[i] + " not established yet...");
+					System.out.println("Worker " + sm.workerIPs.get(i) + " not established yet...");
+					e.printStackTrace();
 				}
 			}
 		}
@@ -51,11 +60,18 @@ public class SuperMaster {
 			if (scan.nextLine().equals("job")) {
 				System.out.println("Enter txt file name:");
 				String file = scan.nextLine();
-				String jid = ownIP.toString() + "_" + numJobs;
-				sm.numJobs ++;
-				IntMaster master = (IntMaster) UnicastRemoteObject.exportObject(master,0);
-				registry.bind("Master " + sm.numJobs.toString(), master);
-				master.beginJob(jid,file,sm.workerIPs,sm.workersRunning,sm.ownIP);
+				try {
+					String jid = sm.ownIP.toString() + "_" + sm.numJobs;
+					sm.numJobs ++;
+					Master master = new Master(sm.ownIP, jid,file,sm.workerIPs,sm.workersRunning);
+					IntMaster masterStub = (IntMaster) UnicastRemoteObject.exportObject(master,0);
+					registry.bind("Master " + sm.numJobs, masterStub);
+				} catch (Exception e) {
+					System.out.println("Master " + sm.numJobs + " could not be started");
+					e.printStackTrace();
+				}
+				
+				
 			}
 		}
 	}

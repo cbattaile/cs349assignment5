@@ -1,15 +1,8 @@
+import java.rmi.Remote;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+
 public interface IntWorker extends Remote {
-
-private String ownIP;
-private HashMap<IntWorker, Boolean> workerStubs; //(worker stub, true), including own stub
-
-public IntWorker() {
-
-}
-
-public void initialize(HashMap workers, String myIP) {
-	ownIP = myIP;
-	workerStubs = workers;
-}
-
+	IntMapTask startMapTask(String name, String input, IntMaster theMaster) throws RemoteException, AlreadyBoundException;
+	IntReduceTask startReduceTask(String name, String key, IntMaster theMaster) throws RemoteException, AlreadyBoundException;
 }

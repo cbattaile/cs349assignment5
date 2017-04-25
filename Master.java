@@ -1,26 +1,26 @@
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Master implements IntMaster {
 
+private String jid;
 private String ownIP;
 private HashMap<IntWorker,Boolean> workerStubs; //(worker stub, true), including own stub
 private ArrayList<String> workerIPs;
-private String file;
 private String jobID;
 private IntMaster stub;
+private String filename;
+private File file;
 
-public Master() {
-	
-}
 
-public Master(String ownIP, HashMap<IntWorker,Boolean> workerStubs, ArrayList<String> workerIP) {
-
-}
-
-public void beginJob(String j, String f, ArrayList<String> ips, HashMap<IntWorker,Boolean> workers, String myIP) {
+public Master(String myIP, String jid, String filename, ArrayList<String> workerIPs, HashMap<IntWorker,Boolean> workerStubs) {
 	ownIP = myIP;
-	workerStubs = workers;
-	workerIPs = ips;
-	file = f;
-	jobID = j;
+	workerStubs = workerStubs;
+	workerIPs = workerIPs;
+	filename = filename;
+	file = new File("wordfrequencies.txt");
+	
 }
 
 public static void main(String[] args) {
