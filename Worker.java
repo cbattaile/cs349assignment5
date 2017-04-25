@@ -28,7 +28,6 @@ public IntMapTask startMapTask(String name, String input, IntMaster theMaster)
 	}
 }
 
-@Override
 public IntReduceTask startReduceTask(String name, String key, IntMaster theMaster)
 		throws RemoteException, AlreadyBoundException {
 	ReduceTask reducerTask = new ReduceTask(key, theMaster);
