@@ -1,15 +1,13 @@
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.PrintWriter;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Master implements IntMaster {
 
-	private String ownIP;
 	private String jobID;
 	private IntMaster masterStub;
 
@@ -20,7 +18,6 @@ public class Master implements IntMaster {
 
 	// (worker stub, true), including own stub
 	private HashMap<IntWorker, Boolean> workerStubs; 
-	private ArrayList<String> workerIPs;
 	private IntWorker ownWorkerStub;
 	private ArrayList<IntWorker> workerStubList; //arraylist of all non-self worker stubs
 	
@@ -29,9 +26,8 @@ public class Master implements IntMaster {
 	private HashMap<String, IntReduceTask> reducerTasks;
 	private HashMap<String, Boolean> reducerTasksDone;
 
-	public Master(String myIP, String jid, String filename, ArrayList<String> workerIPs,
+	public Master( String jid, String filename, 
 		HashMap<IntWorker, Boolean> workerStubs, IntWorker ownWorkerStub) {
-		ownIP = myIP;
 		jobID = jid;
 		masterStub = null;
 		
@@ -40,7 +36,6 @@ public class Master implements IntMaster {
 		currentlyReading = false;
 		
 		this.workerStubs = workerStubs;
-		this.workerIPs = workerIPs;
 		this.ownWorkerStub = ownWorkerStub;
 		
 		mapperTasks = new HashMap<String, IntMapTask>();
@@ -75,11 +70,11 @@ public class Master implements IntMaster {
 			while (line != null) {
 				System.out.println("processing: " + line);
 				// find a worker node and start a map task on it
-				String mapTaskName = "M" + jid + "_" + Integer.toString(count);
-				IntMapTask newMapTask = workerStubs.get(count % numWorkers).createMapTask(mapTaskName);
-				mapperTasks.put(mapperName, newMapTask);
-				mapperTasksDone.put(mapperName, false);
-				newMapTask.processInput(line, stub);
+				String mapTaskName = "M" + jobID + "_" + Integer.toString(count);
+				IntMapTask newMapTask = workerStubList.get(count % numWorkers).startMapTask(mapTaskName, line, masterStub);
+				mapperTasks.put(mapTaskName, newMapTask);
+				mapperTasksDone.put(mapTaskName, false);
+				newMapTask.processInput(line, masterStub);
 				count++;
 				line = bufr.readLine();
 			}
@@ -93,7 +88,7 @@ public class Master implements IntMaster {
 			synchronized (reducerTasks) {
 				System.out.println("all mappers are done send terminate message to reducers");
 				for (String reducerName : reducerTasks.keySet()) {
-					IntReducer reducerStub = reducerTasks.get(reducerName);
+					IntReduceTask reducerStub = reducerTasks.get(reducerName);
 					try {
 						System.out.println("sending terminate to " + reducerName);
 						reducerStub.terminate();
@@ -121,15 +116,15 @@ public class Master implements IntMaster {
 	public IntReduceTask[] getReducers(String[] keys) {
 		IntReduceTask[] matchingReducers = new IntReduceTask[keys.length + 1];
 		for (int i = 0; i < keys.length; i++) {
-			String reducerName = "R" + jid + "_" + keys[i];
+			String reducerName = "R" + jobID + "_" + keys[i];
 			if (reducerTasks.containsKey(reducerName)) {
 				matchingReducers[i] = reducerTasks.get(reducerName);
 			} else {
 				// create new reducerTask
 				IntWorker worker = workerStubList.get(reducerName.hashCode() % workerStubList.size());
-				IntReduceTask newReducerTask;
+				IntReduceTask newReduceTask;
 				try {
-					newReduceTask = worker.createReduceTask(reducerName, this.stub);
+					newReduceTask = worker.startReduceTask(reducerName, keys[i], masterStub);
 					reducerTasks.put(reducerName, newReduceTask);
 					reducerTasksDone.put(reducerName, false);
 					matchingReducers[i] = newReduceTask;

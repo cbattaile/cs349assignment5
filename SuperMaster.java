@@ -22,7 +22,7 @@ public class SuperMaster {
 		// Initialize master
 		String jid = ownIP.toString() + "_" + numJobs;
 		numJobs++;
-		Master master = new Master(ownIP, jid, filename, workerIPs, workersRunning, myWorker);
+		Master master = new Master( jid, filename, workersRunning, myWorker);
 		// add to registry
 		try {
 			IntMaster masterStub = (IntMaster) UnicastRemoteObject.exportObject(master, 0);
@@ -90,5 +90,6 @@ public class SuperMaster {
 
 			}
 		}
+		
 	}
 }
