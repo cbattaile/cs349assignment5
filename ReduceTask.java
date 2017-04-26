@@ -4,6 +4,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class ReduceTask implements IntReduceTask {
 	String key;
+	String reducerName;
 	IntMaster masterStub;
 	int count;
 
@@ -13,8 +14,9 @@ public class ReduceTask implements IntReduceTask {
 		count = 0;
 	}*/
 
-	public ReduceTask(String key, IntMaster master) {
+	public ReduceTask(String name, String key, IntMaster master) {
 		this.key = key;
+		this.reducerName = name;
 		this.masterStub = master;
 		count = 0;
 	}
@@ -48,7 +50,7 @@ public class ReduceTask implements IntReduceTask {
 		System.out.println("R: terminating Reducer: " + key);
 		try {
 			System.out.println("R: Send to Master: " + key + " v: " + count);
-			masterStub.receiveOutput(key, count);
+			masterStub.receiveOutput(reducerName ,key, count);
 			return 1;
 		} catch (Exception e) {
 			System.err.println("R: Master Exception - Cannot read file" + e.toString());

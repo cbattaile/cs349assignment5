@@ -32,7 +32,8 @@ public class Master implements IntMaster {
 		masterStub = null;
 
 		inputFilename = filename;
-		outputFile = new File("wordfrequencies.txt");
+		String outputname = filename.split("[.]")[0];
+		outputFile = new File(outputname + "_wordfrequencies.txt");
 		currentlyReading = false;
 
 		this.workerStubs = workerStubs;
@@ -83,8 +84,10 @@ public class Master implements IntMaster {
 
 			// master checks that the mappers are done
 			while (!mapperTasksDone.isEmpty()) {
-				System.out.println("mappers not done");
-			}
+			}	
+			
+			System.out.println("mappers done");
+			
 			synchronized (reducerTasks) {
 				System.out.println("all mappers are done send terminate message to reducers");
 				for (String reducerName : reducerTasks.keySet()) {
@@ -114,20 +117,25 @@ public class Master implements IntMaster {
 	}
 
 	public IntReduceTask[] getReducers(String[] keys) {
-		IntReduceTask[] matchingReducers = new IntReduceTask[keys.length + 1];
+		IntReduceTask[] matchingReducers = new IntReduceTask[keys.length];
 		for (int i = 0; i < keys.length; i++) {
-			String reducerName = "R" + jobID + "_" + keys[i];
+			String key = keys[i];
+			String reducerName = "R" + jobID + "_" + key;
 			if (reducerTasks.containsKey(reducerName)) {
+				System.out.println("found reducer for "+ key);
 				matchingReducers[i] = reducerTasks.get(reducerName);
 			} else {
 				// create new reducerTask
-				IntWorker worker = workerStubList.get(reducerName.hashCode() % workerStubList.size());
-				IntReduceTask newReduceTask;
+				System.out.println("did not find reducer for "+ key + ", create reducer on new worker list[" + reducerName.hashCode()%workerStubList.size() + "]");
+				IntWorker worker = workerStubList.get(Math.abs(reducerName.hashCode()) % workerStubList.size());
+				System.out.println("found new worker for "+ key);
 				try {
-					newReduceTask = worker.startReduceTask(reducerName, keys[i], masterStub);
+					IntReduceTask  newReduceTask = worker.startReduceTask(reducerName, key, masterStub);
+					System.out.println("Successfully started reducer for "+ key);
 					reducerTasks.put(reducerName, newReduceTask);
 					reducerTasksDone.put(reducerName, false);
 					matchingReducers[i] = newReduceTask;
+					System.out.println("Successfully added reducer for "+ key);
 				} catch (Exception e) {
 					System.err.println("Client exception(could not add reduceTask): " + e.toString());
 					e.printStackTrace();
@@ -138,13 +146,13 @@ public class Master implements IntMaster {
 		return matchingReducers;
 	}
 
-	public void receiveOutput(String key, int value) {
+	public void receiveOutput(String reducerName, String key, int value) {
 		try {
 			System.out.println("writing to file: " + key + ":" + value);
 			writer.println(key + ":" + value);
 			// writer.close();
 			synchronized (reducerTasksDone) {
-				reducerTasksDone.remove(key);
+				reducerTasksDone.remove(reducerName);
 			}
 		} catch (Exception e) {
 			System.err.println("Master Exception - Cannot write file" + e.toString());

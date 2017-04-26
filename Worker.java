@@ -30,7 +30,7 @@ public IntMapTask startMapTask(String name, String input, IntMaster theMaster)
 
 public IntReduceTask startReduceTask(String name, String key, IntMaster theMaster)
 		throws RemoteException, AlreadyBoundException {
-	ReduceTask reducerTask = new ReduceTask(key, theMaster);
+	ReduceTask reducerTask = new ReduceTask(name, key, theMaster);
 	// add to registry
 	try {
 		IntReduceTask reducerStub = (IntReduceTask) UnicastRemoteObject.exportObject(reducerTask, 0);

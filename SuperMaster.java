@@ -74,6 +74,7 @@ public class SuperMaster {
 		// begin input loop checking for jobs coming in
 		// in the form of .txt files
 
+		System.out.println("Workers established, type \"job\" to start map reduce job:");
 		Scanner scan = new Scanner(System.in);
 
 		while (true) {
