@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class SuperMaster {
-	private final ArrayList<String> workerIPs = new ArrayList<String>(Arrays.asList("ownIP", "IP2", "IP3"));
+	private final ArrayList<String> workerIPs = new ArrayList<String>(
+			Arrays.asList("52.70.183.77", "54.161.104.10", "52.23.250.51"));
 	private HashMap<IntWorker, Boolean> workersRunning = new HashMap<IntWorker, Boolean>();
 	private IntWorker myWorker;
 	private String ownIP;
@@ -22,7 +23,7 @@ public class SuperMaster {
 		// Initialize master
 		String jid = ownIP.toString() + "_" + numJobs;
 		numJobs++;
-		Master master = new Master( jid, filename, workersRunning, myWorker);
+		Master master = new Master(jid, filename, workersRunning, myWorker);
 		// add to registry
 		try {
 			IntMaster masterStub = (IntMaster) UnicastRemoteObject.exportObject(master, 0);
@@ -62,9 +63,9 @@ public class SuperMaster {
 				try {
 					Registry reg = LocateRegistry.getRegistry(sm.workerIPs.get(i));
 					sm.workersRunning.put((IntWorker) reg.lookup("Worker"), true);
+					Thread.sleep(2000);
 				} catch (Exception e) {
 					System.out.println("Worker " + sm.workerIPs.get(i) + " not established yet...");
-					e.printStackTrace();
 				}
 			}
 		}
@@ -90,6 +91,6 @@ public class SuperMaster {
 
 			}
 		}
-		
+
 	}
 }

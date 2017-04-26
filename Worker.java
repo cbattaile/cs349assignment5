@@ -36,11 +36,11 @@ public IntReduceTask startReduceTask(String name, String key, IntMaster theMaste
 		IntReduceTask reducerStub = (IntReduceTask) UnicastRemoteObject.exportObject(reducerTask, 0);
 		// Bind the remote object's stub in the registry
 		Registry registry = LocateRegistry.getRegistry();
-		registry.bind("R" + key, reducerStub);
-		System.out.println("R: created Reducer R" + key);
+		registry.bind(name, reducerStub);
+		System.out.println("R: created Reducer " + name);
 		return reducerStub;
 	} catch (Exception e) {
-		System.err.println("R: Client exception(could not register Reducer task " + key + "): \n" + e.toString());
+		System.err.println("R: Client exception(could not register Reducer task for " + key + "): \n" + e.toString());
 		e.printStackTrace();
 		return null;
 	}

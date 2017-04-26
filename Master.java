@@ -17,27 +17,27 @@ public class Master implements IntMaster {
 	private PrintWriter writer;
 
 	// (worker stub, true), including own stub
-	private HashMap<IntWorker, Boolean> workerStubs; 
+	private HashMap<IntWorker, Boolean> workerStubs;
 	private IntWorker ownWorkerStub;
-	private ArrayList<IntWorker> workerStubList; //arraylist of all non-self worker stubs
-	
+	private ArrayList<IntWorker> workerStubList; // arraylist of all non-self
+													// worker stubs
+
 	private HashMap<String, IntMapTask> mapperTasks; // the actual mapper tasks
 	private HashMap<String, Boolean> mapperTasksDone; // whether a map is done
 	private HashMap<String, IntReduceTask> reducerTasks;
 	private HashMap<String, Boolean> reducerTasksDone;
 
-	public Master( String jid, String filename, 
-		HashMap<IntWorker, Boolean> workerStubs, IntWorker ownWorkerStub) {
+	public Master(String jid, String filename, HashMap<IntWorker, Boolean> workerStubs, IntWorker ownWorkerStub) {
 		jobID = jid;
 		masterStub = null;
-		
+
 		inputFilename = filename;
 		outputFile = new File("wordfrequencies.txt");
 		currentlyReading = false;
-		
+
 		this.workerStubs = workerStubs;
 		this.ownWorkerStub = ownWorkerStub;
-		
+
 		mapperTasks = new HashMap<String, IntMapTask>();
 		mapperTasksDone = new HashMap<String, Boolean>();
 		reducerTasks = new HashMap<String, IntReduceTask>();
@@ -46,13 +46,12 @@ public class Master implements IntMaster {
 		workerStubList = new ArrayList<IntWorker>(workerStubs.keySet());
 
 	}
-	
+
 	public void setStub(IntMaster stub) {
 		this.masterStub = stub;
 	}
-	
+
 	public void start() {
-		workerStubs.remove(ownWorkerStub);
 		try {
 			this.writer = new PrintWriter(outputFile);
 		} catch (FileNotFoundException e) {
@@ -64,14 +63,15 @@ public class Master implements IntMaster {
 			BufferedReader bufr = new BufferedReader(fr);
 			String line = bufr.readLine();
 			int count = 0;
-			int numWorkers = workerStubs.size()-1;
+			int numWorkers = workerStubList.size();
 			// 2. for each line, master starts task on one of the mapper nodes
 			// ^^use FCFS
 			while (line != null) {
 				System.out.println("processing: " + line);
 				// find a worker node and start a map task on it
 				String mapTaskName = "M" + jobID + "_" + Integer.toString(count);
-				IntMapTask newMapTask = workerStubList.get(count % numWorkers).startMapTask(mapTaskName, line, masterStub);
+				IntMapTask newMapTask = workerStubList.get(count % numWorkers).startMapTask(mapTaskName, line,
+						masterStub);
 				mapperTasks.put(mapTaskName, newMapTask);
 				mapperTasksDone.put(mapTaskName, false);
 				newMapTask.processInput(line, masterStub);
@@ -111,7 +111,7 @@ public class Master implements IntMaster {
 			e.printStackTrace();
 		}
 
-	} 
+	}
 
 	public IntReduceTask[] getReducers(String[] keys) {
 		IntReduceTask[] matchingReducers = new IntReduceTask[keys.length + 1];

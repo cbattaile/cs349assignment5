@@ -7,11 +7,11 @@ public class ReduceTask implements IntReduceTask {
 	IntMaster masterStub;
 	int count;
 
-	public ReduceTask() { // starting reducerMangaer
+	/*public ReduceTask() { // starting reducerMangaer
 		this.key = "";
 		this.masterStub = null;
 		count = 0;
-	}
+	}*/
 
 	public ReduceTask(String key, IntMaster master) {
 		this.key = key;
@@ -19,15 +19,15 @@ public class ReduceTask implements IntReduceTask {
 		count = 0;
 	}
 
-	public IntReduceTask createReduceTask(String key, IntMaster master) {
+/*	public IntReduceTask createReduceTask(String name, String key, IntMaster master) {
 		ReduceTask reducerTask = new ReduceTask(key, master);
 		// add to registry
 		try {
 			IntReduceTask reducerStub = (IntReduceTask) UnicastRemoteObject.exportObject(reducerTask, 0);
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry();
-			registry.bind("R" + key, reducerStub);
-			System.out.println("R: created Reducer R" + key);
+			registry.bind(name, reducerStub);
+			System.out.println("R: created Reducer " + name);
 			return reducerStub;
 		} catch (Exception e) {
 			System.err.println("R: Client exception(could not register Reducer task " + key + "): \n" + e.toString());
@@ -36,7 +36,7 @@ public class ReduceTask implements IntReduceTask {
 		}
 
 	}
-
+*/
 	public void receiveValues(int value) {
 		System.out.println("R: " + key + " + " + value);
 		count += value;
